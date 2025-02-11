@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Product;
+use App\Models\Customer;
+// use App\Models\Guest;
 
 class GuestController extends Controller
 {
@@ -11,7 +14,7 @@ class GuestController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(Product::all(), 200);
     }
 
     /**
@@ -19,7 +22,21 @@ class GuestController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'cs_name' => 'required|string|max:255',
+            'cs_email' => 'required|string|email|max:255',
+            'cs_phone' => 'required|integer',
+            'cs_address' => 'required|string|max:255',
+        ]);
+
+        $customer = Customer::create([
+            'cs_name' => $request->cs_name,
+            'cs_email' => $request->cs_email,
+            'cs_phone' => $request->cs_phone,
+            'cs_address' => $request->cs_address,
+        ]);
+
+        return response()->json($customer, 201);
     }
 
     /**

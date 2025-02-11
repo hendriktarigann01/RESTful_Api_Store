@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+// use App\Models\Admin;
 
 class AdminController extends Controller
 {
@@ -40,7 +41,8 @@ class AdminController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $product = Product::findOrFail($id);
+        return response()->json($product, 200);
     }
 
     /**
