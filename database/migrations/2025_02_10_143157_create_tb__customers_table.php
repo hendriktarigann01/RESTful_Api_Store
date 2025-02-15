@@ -15,8 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('cs_name', 255);
             $table->string('cs_email', 255);
-            $table->integer('cs_phone');
+            $table->string('cs_phone', 20);
             $table->string('cs_address', 255);
+            $table->string('cs_password', 255);
+            $table->string('role', 255);
             $table->timestamps();
         });
     }
