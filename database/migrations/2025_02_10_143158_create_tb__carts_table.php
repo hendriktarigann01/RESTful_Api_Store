@@ -12,15 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('carts', function (Blueprint $table) {
-            $table->id();
-            $table->string('cs_id', 255);
+            $table->uuid('id')->primary();
+            $table->uuid('cs_id');
             $table->string('number_product_cart', 50);
-            $table->string('product_1', 255);
-            $table->string('product_2', 255);
-            $table->string('product_n', 255);
+            $table->string('product_1', 255)->nullable();
+            $table->string('product_2', 255)->nullable();
+            $table->string('product_n', 255)->nullable();
             $table->float('product_price');
             $table->float('product_price_total');
             $table->timestamps();
+
+            // Tambahkan foreign key ke tabel customers
+            $table->foreign('cs_id')->references('id')->on('customers')->onDelete('cascade');
         });
     }
 

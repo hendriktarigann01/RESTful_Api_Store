@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Product;
 
 class CustomerController extends Controller
 {
@@ -11,7 +12,13 @@ class CustomerController extends Controller
      */
     public function index()
     {
-        //
+        // Mengambil semua data Cart
+        $product = Product::all();
+
+        return response()->json([
+            'message' => 'List of Product Customer',
+            'data'    => $product
+        ], 200);
     }
 
     /**

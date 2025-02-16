@@ -85,7 +85,7 @@ return [
     //     'driver' => 'database',
     //     'table' => 'users',
     // ],
-    
+
     'providers' => [
         'customers' => [
             'driver' => 'eloquent',
