@@ -10,7 +10,7 @@ class CustomerMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        // Pastikan user login dan memiliki peran admin
+        // Pastikan user login dan memiliki peran customer
         if (Auth::guard('api')->check() && Auth::guard('api')->user()->role === 'customer') {
             return $next($request);
         }

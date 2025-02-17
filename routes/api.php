@@ -15,19 +15,21 @@ Route::post('login', [AuthController::class, 'login']);
 Route::get('products', [GuestController::class, 'index']);
 
 // 🔹 CUSTOMER (Harus Login)
-Route::middleware(['auth:api', 'admin'])->group(function () {
+Route::middleware(['auth:api'])->group(function () {
     Route::get('me', [AuthController::class, 'me']);
     Route::post('logout', [AuthController::class, 'logout']);
 
     // 🔹 Product (Harus Login)
     Route::get('get-product', [AdminController::class, 'index']);
+    Route::get('get-product/{id}', [AdminController::class, 'show']);
     Route::post('create-product', [AdminController::class, 'store']);
     Route::post('update-product/{id}', [AdminController::class, 'update']);
     Route::delete('delete-product/{id}', [AdminController::class, 'destroy']);
 });
 
-Route::middleware(['auth:api', 'customer'])->group(function () {
+Route::middleware(['auth:api'])->group(function () {
     Route::get('get-cart', [CartController::class, 'index']);
+    Route::get('get-cart/{id}', [CartController::class, 'show']);
     Route::post('create-cart', [CartController::class, 'store']);
     Route::post('update-cart/{id}', [CartController::class, 'update']);
     Route::delete('delete-cart/{id}', [CartController::class, 'destroy']);

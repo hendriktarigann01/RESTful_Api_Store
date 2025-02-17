@@ -12,15 +12,12 @@ class CartController extends Controller
      */
     public function index()
     {
-        // Mengambil semua data Cart
-        // $carts = Cart::all();
+        $carts = Cart::all();
 
-        // return response()->json([
-        //     'message' => 'List of carts',
-        //     'data'    => $carts
-        // ], 200);
-
-        return response()->json(Cart::all(), 200);
+        return response()->json([
+            'message' => 'List of carts',
+            'data'    => $carts
+        ], 200);
     }
 
     /**
@@ -30,13 +27,15 @@ class CartController extends Controller
     {
         // Validasi data yang dikirim
         $validated = $request->validate([
-            'cs_id'               => 'required|integer',
+            'cs_id'               => 'required|uuid',
             'number_product_cart' => 'required|integer',
-            'product_price'       => 'required|numeric',
-            'product_price_total' => 'required|numeric'
+            'items'               => 'nullable|array',
+            'sub_total'           => 'required|numeric',
+            'tax'                 => 'required|numeric',
+            'discount'            => 'required|numeric',
+            'total'               => 'required|numeric'
         ]);
 
-        // Simpan data ke database
         $cart = Cart::create($validated);
 
         return response()->json([
@@ -50,12 +49,13 @@ class CartController extends Controller
      */
     public function show($id)
     {
-        // Cari Cart berdasarkan ID, jika tidak ada maka akan throw 404
         $cart = Cart::findOrFail($id);
+        $data = $cart->toArray();
+        $data['items_with_product_data'] = $cart->items_with_product_data;
 
         return response()->json([
-            'message' => 'Cart detail',
-            'data'    => $cart
+            'message' => 'Cart details',
+            'data'    => $data
         ], 200);
     }
 
@@ -65,18 +65,18 @@ class CartController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Cari Cart berdasarkan ID
         $cart = Cart::findOrFail($id);
 
-        // Validasi data yang di-update (tidak semua field harus required)
         $validated = $request->validate([
-            'cs_id'               => 'integer',
-            'number_product_cart' => 'integer',
-            'product_price'       => 'numeric',
-            'product_price_total' => 'numeric'
+            'cs_id'               => 'sometimes|required|uuid',
+            'number_product_cart' => 'sometimes|required|integer',
+            'items'               => 'nullable|array',
+            'sub_total'           => 'sometimes|required|numeric',
+            'tax'                 => 'sometimes|required|numeric',
+            'discount'            => 'sometimes|required|numeric',
+            'total'               => 'sometimes|required|numeric'
         ]);
 
-        // Update data Cart
         $cart->update($validated);
 
         return response()->json([
@@ -90,10 +90,7 @@ class CartController extends Controller
      */
     public function destroy($id)
     {
-        // Cari Cart berdasarkan ID
         $cart = Cart::findOrFail($id);
-
-        // Hapus data
         $cart->delete();
 
         return response()->json([
