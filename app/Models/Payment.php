@@ -9,10 +9,18 @@ class Payment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['cs_id', 'cs_name', 'cart_id', 'total_price', 'payment_status', 'payment_method', 'order_id', 'midtrans_token', 'midtrans_url', 'expiry_time'];
+    protected $fillable = ['cs_id', 'cs_name', 'cart_id', 'total_price', 'payment_status','order_id', 'midtrans_token', 'midtrans_url', 'expiry_time'];
 
     public function customer()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Customer::class, 'cs_id', 'id');
+    }
+
+    /**
+     * Get the cart associated with the payment.
+     */
+    public function cart()
+    {
+        return $this->belongsTo(Cart::class, 'cart_id', 'id');
     }
 }

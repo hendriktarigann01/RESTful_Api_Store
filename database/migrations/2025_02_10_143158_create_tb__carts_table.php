@@ -12,18 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('carts', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->uuid('cs_id');
             $table->integer('number_product_cart')->default(0);
             $table->json('items')->nullable();
-            $table->decimal('sub_total', 10)->default(0);
-            $table->decimal('tax', 10)->default(0);
-            $table->decimal('discount', 10)->default(0);
-            $table->decimal('total', 10)->default(0);
+            $table->decimal('sub_total', 10, 2)->default(0);
+            $table->decimal('tax', 10, 2)->default(0);
+            $table->decimal('discount', 10, 2)->default(0);
+            $table->decimal('total', 10, 2)->default(0);
             $table->timestamps();
 
             $table->foreign('cs_id')->references('id')->on('customers')->onDelete('cascade');
-            
         });
     }
 

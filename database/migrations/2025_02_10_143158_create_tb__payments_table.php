@@ -13,17 +13,21 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->string('cs_id', 255);
+            $table->uuid('cs_id');
             $table->string('cs_name', 255);
-            $table->string('cart_id', 255);
-            $table->unsignedBigInteger('total_price');
+            $table->uuid('cart_id');
+            $table->decimal('total_price', 10, 2)->default(0);
             $table->enum('payment_status', ['pending', 'settlement', 'expire', 'cancel', 'deny', 'refund', 'chargeback']);
-            $table->string('payment_method', 50);
+            $table->string('payment_type')->nullable();
             $table->string('order_id', 100)->nullable();
             $table->string('midtrans_token', 255)->nullable();
             $table->string('midtrans_url')->nullable();
-            $table->timestamp('expiry_time')->nullable(); 
+            $table->timestamp('settlement_time')->nullable();
+            $table->timestamp('expiry_time')->nullable();
             $table->timestamps();
+
+            $table->foreign('cs_id')->references('id')->on('customers')->onDelete('cascade');
+            $table->foreign('cart_id')->references('id')->on('carts')->onDelete('cascade');
         });
     }
 

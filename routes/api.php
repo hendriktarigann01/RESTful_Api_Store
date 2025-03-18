@@ -4,8 +4,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\AuthController;
+
+// 🔹 API ROUTES WITHOUT AUTHENTICATION
+Route::post('/payments/notification', [PaymentController::class, 'handleNotification']);
 
 // 🔹 AUTHENTICATION ROUTES
 Route::post('register', [AuthController::class, 'register']);
@@ -34,6 +38,18 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('update-cart/{id}', [CartController::class, 'update']);
     Route::delete('delete-cart/{id}', [CartController::class, 'destroy']);
 });
+
+Route::middleware(['auth:api'])->group(function () {
+    Route::get('/payments', [PaymentController::class, 'index']);
+    Route::post('/payments', [PaymentController::class, 'store']);
+    Route::get('/payments/{id}', [PaymentController::class, 'show']);
+    Route::put('/payments/{id}', [PaymentController::class, 'update']);
+
+    // Endpoint untuk mendapatkan status pembayaran berdasarkan order_id
+    Route::get('/payments/status/{orderId}', [PaymentController::class, 'getStatus']);
+});
+
+
 
 // // 🔹 ADMIN
 // Route::middleware(['auth:api', 'admin'])->group(function () {

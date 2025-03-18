@@ -30,10 +30,10 @@ class CartController extends Controller
             'cs_id'               => 'required|uuid',
             'number_product_cart' => 'required|integer',
             'items'               => 'nullable|array',
-            'sub_total'           => 'required|numeric',
-            'tax'                 => 'required|numeric',
-            'discount'            => 'required|numeric',
-            'total'               => 'required|numeric'
+            'sub_total' => 'required|numeric|min:0',
+            'tax'       => 'required|numeric|min:0',
+            'discount'  => 'sometimes|numeric|min:0',
+            'total'     => 'required|numeric|min:0'
         ]);
 
         $cart = Cart::create($validated);
@@ -50,7 +50,7 @@ class CartController extends Controller
     public function show($id)
     {
         $cart = Cart::findOrFail($id);
-        $data = $cart->toArray();
+        // $data = $cart->toArray();
         $data['items_with_product_data'] = $cart->items_with_product_data;
 
         return response()->json([
@@ -71,10 +71,10 @@ class CartController extends Controller
             'cs_id'               => 'sometimes|required|uuid',
             'number_product_cart' => 'sometimes|required|integer',
             'items'               => 'nullable|array',
-            'sub_total'           => 'sometimes|required|numeric',
-            'tax'                 => 'sometimes|required|numeric',
-            'discount'            => 'sometimes|required|numeric',
-            'total'               => 'sometimes|required|numeric'
+            'sub_total'           => 'sometimes|required|decimal:10,2|min:0',
+            'tax'                 => 'sometimes|required|decimal:10,2|min:0',
+            'discount'            => 'sometimes|required|decimal:10,2|min:0',
+            'total'               => 'sometimes|required|decimal:10,2|min:0'
         ]);
 
         $cart->update($validated);
