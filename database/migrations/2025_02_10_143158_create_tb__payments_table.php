@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->uuid('cs_id');
-            $table->string('cs_name', 255);
+            $table->uuid('user_id');
+            $table->string('name', 255);
             $table->uuid('cart_id');
             $table->decimal('total_price', 10, 2)->default(0);
             $table->enum('payment_status', ['pending', 'settlement', 'expire', 'cancel', 'deny', 'refund', 'chargeback']);
@@ -26,7 +26,8 @@ return new class extends Migration
             $table->timestamp('expiry_time')->nullable();
             $table->timestamps();
 
-            $table->foreign('cs_id')->references('id')->on('customers')->onDelete('cascade');
+            // $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('user_id')->references('user_id')->on('customer_details')->onDelete('cascade');
             $table->foreign('cart_id')->references('id')->on('carts')->onDelete('cascade');
         });
     }

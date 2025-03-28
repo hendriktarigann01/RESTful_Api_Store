@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('carts', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('cs_id');
+            $table->uuid('user_id');
             $table->integer('number_product_cart')->default(0);
             $table->json('items')->nullable();
             $table->decimal('sub_total', 10, 2)->default(0);
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->decimal('total', 10, 2)->default(0);
             $table->timestamps();
 
-            $table->foreign('cs_id')->references('id')->on('customers')->onDelete('cascade');
+            $table->foreign('user_id')->references('user_id')->on('customer_details')->onDelete('cascade');
         });
     }
 

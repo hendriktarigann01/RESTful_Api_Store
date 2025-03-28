@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Product;
+use App\Models\CustomerDetail;
 use Illuminate\Support\Str;
 
 class Cart extends Model
@@ -12,7 +13,7 @@ class Cart extends Model
     use HasFactory;
 
     protected $fillable = [
-        'cs_id',
+        'user_id',
         'number_product_cart',
         'items',
         'sub_total',
@@ -35,9 +36,9 @@ class Cart extends Model
         });
     }
 
-    public function customer()
+    public function customerDetails()
     {
-        return $this->belongsTo(Customer::class, 'cs_id', 'id');
+        return $this->belongsTo(CustomerDetail::class, 'user_id', 'user_id');
     }
 
     public function getItemsWithProductDataAttribute()

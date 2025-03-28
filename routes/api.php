@@ -7,13 +7,42 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\VerificationController;
+use App\Http\Controllers\PasswordResetController;
 
-// 🔹 API ROUTES WITHOUT AUTHENTICATION
-Route::post('/payments/notification', [PaymentController::class, 'handleNotification']);
+// 🔹 API ROUTES WITHOUT AUTHENTICATION MIDTRANS
+Route::post('/payments/notification', [PaymentController::class, 'handleNotification'])
+    ->withoutMiddleware(['auth:api']);
+    
+// 🔹 AUTHENTICATION & VERIFICATION ROUTES
+Route::prefix('auth')->group(function () {
+    // Registrasi
+    Route::post('register', [AuthController::class, 'register']);
 
-// 🔹 AUTHENTICATION ROUTES
-Route::post('register', [AuthController::class, 'register']);
-Route::post('login', [AuthController::class, 'login']);
+    // Login
+    Route::post('login', [AuthController::class, 'login']);
+
+    // Logout
+    Route::post('logout', [AuthController::class, 'logout'])
+        ->middleware('auth:api');
+
+    // Email Verification
+    Route::get('email/verify', [VerificationController::class, 'show'])
+        ->name('verification.notice')
+        ->middleware('auth:api');
+
+    Route::get('email/verify/{id}/{hash}', [VerificationController::class, 'verify'])
+        ->name('verification.verify')
+        ->middleware(['auth:api', 'signed']);
+
+    Route::post('email/resend', [VerificationController::class, 'resend'])
+        ->name('verification.resend')
+        ->middleware('auth:api');
+
+    // Password Reset
+    Route::post('password/forgot', [PasswordResetController::class, 'forgotPassword']);
+    Route::post('password/reset', [PasswordResetController::class, 'resetPassword']);
+});
 
 // 🔹 GUEST (Tanpa Login)
 Route::get('products', [GuestController::class, 'index']);
@@ -48,11 +77,3 @@ Route::middleware(['auth:api'])->group(function () {
     // Endpoint untuk mendapatkan status pembayaran berdasarkan order_id
     Route::get('/payments/status/{orderId}', [PaymentController::class, 'getStatus']);
 });
-
-
-
-// // 🔹 ADMIN
-// Route::middleware(['auth:api', 'admin'])->group(function () {
-//     Route::apiResource('products', ProductController::class); // CRUD API
-//     Route::apiResource('admin', AdminController::class);
-// });

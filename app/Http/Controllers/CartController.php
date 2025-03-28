@@ -27,7 +27,7 @@ class CartController extends Controller
     {
         // Validasi data yang dikirim
         $validated = $request->validate([
-            'cs_id'               => 'required|uuid',
+            'user_id'               => 'required|uuid',
             'number_product_cart' => 'required|integer',
             'items'               => 'nullable|array',
             'sub_total' => 'required|numeric|min:0',
@@ -68,7 +68,7 @@ class CartController extends Controller
         $cart = Cart::findOrFail($id);
 
         $validated = $request->validate([
-            'cs_id'               => 'sometimes|required|uuid',
+            'user_id'               => 'sometimes|required|uuid',
             'number_product_cart' => 'sometimes|required|integer',
             'items'               => 'nullable|array',
             'sub_total'           => 'sometimes|required|decimal:10,2|min:0',

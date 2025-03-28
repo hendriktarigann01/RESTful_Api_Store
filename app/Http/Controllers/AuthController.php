@@ -3,46 +3,88 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Customer;
+use App\Models\User;
+use App\Models\CustomerDetail;
+use App\Models\AdminDetail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
+use Illuminate\Auth\Events\PasswordReset;
+use App\Models\Session;
+
 
 class AuthController extends Controller
 {
     public function register(Request $request)
     {
-        $request->validate([
-            'cs_name' => 'required|string|max:255',
-            'cs_email' => 'required|email|unique:customers,cs_email',
-            'cs_phone' => [
-                'required',
-                'string',
-                'regex:/^(\+62|62)?[\s-]?0?8[1-9]{1}\d{1}[\s-]?\d{4}[\s-]?\d{2,5}$/'
-            ],
-            'cs_address' => 'required|string',
-            'cs_password' => 'required|min:6',
-            'role' => 'string|',
+        $validationRules = [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:6',
+            'role' => 'required|in:admin,customer'
+        ];
+
+        // Tambahan validasi spesifik berdasarkan role
+        if ($request->role === 'customer') {
+            $validationRules += [
+                'phone' => [
+                    'required',
+                    'string',
+                    'regex:/^(\+62|62)?[\s-]?0?8[1-9]{1}\d{1}[\s-]?\d{4}[\s-]?\d{2,5}$/'
+                ],
+                'address' => 'required|string'
+            ];
+        } elseif ($request->role === 'admin') {
+            $validationRules += [
+                'permissions' => 'required|string'
+            ];
+        }
+
+        $validatedData = $request->validate($validationRules);
+
+        $user = User::create([
+            'name' => $validatedData['name'],
+            'email' => $validatedData['email'],
+            'password' => bcrypt($validatedData['password']),
+            'role' => $validatedData['role']
         ]);
 
-        $customer = Customer::create([
-            'cs_name' => $request->cs_name,
-            'cs_email' => $request->cs_email,
-            'cs_phone' => $request->cs_phone,
-            'cs_address' => $request->cs_address,
-            'cs_password' => bcrypt($request->cs_password),
-            'role' => $request->role
-        ]);
+        // Kirim email verifikasi
+        $user->sendEmailVerificationNotification();
 
-        return response()->json($customer, 201);
+        // Tambahkan detail berdasarkan role
+        if ($request->role === 'customer') {
+            CustomerDetail::create([
+                'user_id' => $user->id,
+                'name' => $validatedData['name'],
+                'phone' => $validatedData['phone'],
+                'address' => $validatedData['address']
+            ]);
+        } elseif ($request->role === 'admin') {
+            AdminDetail::create([
+                'user_id' => $user->id,
+                'name' => $validatedData['name'],
+                'permissions' => $validatedData['permissions']
+            ]);
+        }
+
+        // Generate token
+        $token = Auth::guard('api')->login($user);
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token
+        ], 201);
     }
 
     public function login(Request $request)
     {
         $credentials = [
-            'cs_email' => $request->cs_email,
-            'password' => $request->cs_password,
+            'email' => $request->email,
+            'password' => $request->password,
         ];
+
         if (!$token = Auth::guard('api')->attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
@@ -60,8 +102,73 @@ class AuthController extends Controller
         }
     }
 
+    public function forgotPassword(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        return $status === Password::RESET_LINK_SENT
+            ? response()->json(['message' => 'Reset link sent'])
+            : response()->json(['message' => 'Unable to send reset link'], 400);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->setRememberToken(Str::random(60));
+
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? response()->json(['message' => 'Password reset successfully'])
+            : response()->json(['message' => 'Unable to reset password'], 400);
+    }
+
+    public function trackSuspiciousActivity(Request $request)
+    {
+        $user = Auth::guard('api')->user();
+
+        $details = [
+            'action' => $request->action,
+            'metadata' => $request->metadata
+        ];
+
+        // Log aktivitas mencurigakan
+        $session = Session::logSuspiciousActivity($user, $details);
+
+        return response()->json([
+            'message' => 'Activity logged',
+            'session_id' => $session->id
+        ]);
+    }
+
     public function me()
     {
-        return response()->json(Auth::guard('api')->user());
+        $user = Auth::guard('api')->user();
+
+        if ($user->role === 'customer') {
+            $user->customer_details = $user->details;
+        } elseif ($user->role === 'admin') {
+            $user->admin_details = $user->details;
+        }
+
+        return response()->json($user);
     }
 }

@@ -4,16 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\CustomerDetail;
+
 
 class Payment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['cs_id', 'cs_name', 'cart_id', 'total_price', 'payment_status','order_id', 'midtrans_token', 'midtrans_url', 'expiry_time'];
+    protected $fillable = ['user_id', 'name', 'cart_id', 'total_price', 'payment_status','order_id', 'midtrans_token', 'midtrans_url', 'expiry_time'];
 
-    public function customer()
+    public function customerDetails()
     {
-        return $this->belongsTo(Customer::class, 'cs_id', 'id');
+        return $this->belongsTo(CustomerDetail::class, 'user_id', 'user_id');
     }
 
     /**
